@@ -1,0 +1,64 @@
+from nltk.corpus import wordnet as wn
+from nltk.corpus import semcor as semcor
+
+pos=wn.NOUN
+myword="chicken"
+myneighbours=[("dog",0.5),("hen",0.45),("meat",0.4),("cheese",0.38),("duck",0.37),("cow",0.35)]
+#myneighbours=[("turtle",0.5)]
+
+def wnss(wsi,neighbour):
+    #wn sim between word sense and neighbour (maximised over all senses of neighbour)
+    neighbour_senses=wn.synsets(neighbour,pos=pos)
+    maxsim=0
+    for neighsense in neighbour_senses:
+        sim = wsi.lch_similarity(neighsense)
+        if sim > maxsim:
+            maxsim=sim
+            #print "wnss", wsi, wsi.definition, neighsense, neighsense.definition, maxsim
+
+
+    return maxsim
+
+def prevalences(word,neighbours):
+    #compute prevalence of each sense of word according to neighbour list
+    candidates=wn.synsets(word,pos=pos)
+    simtotals={}
+    dstotal=0
+    for (neigh,ds) in neighbours:
+        wn_sim_total=0
+        for cand in candidates:
+            wn_sim=wnss(cand,neigh)
+            wn_sim_total+=wn_sim
+        simtotals[neigh]=wn_sim_total
+        dstotal+=ds
+    prevs=[]
+    for cand in candidates:
+        p=0
+        for (neigh,ds) in neighbours:
+            #print cand, neigh, ds, wnss(cand,neigh),simtotals[neigh]
+            p += (ds/dstotal) * (wnss(cand,neigh)/simtotals[neigh])
+        prevs.append((cand,p))
+    return prevs
+
+def prevalent_sense(word,neighbours):
+    prevs = prevalences(word,neighbours)
+    maxp =0
+    sense =""
+    for (cand,prev) in prevs:
+        if prev>maxp:
+            sense=cand
+            maxp=prev
+
+    return (sense,maxp)
+
+if __name__=="__main__":
+
+    print len(semcor.sents())
+    print semcor.sents()[0]
+    print semcor.tagged_sents()[0][5]
+    print semcor.tagged_sents(tag="sem")[0][5]
+    (ps,sc)=prevalent_sense(myword,myneighbours)
+    print myword, ps, ps.definition, sc
+
+
+
