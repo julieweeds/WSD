@@ -1,10 +1,6 @@
 from nltk.corpus import wordnet as wn
-from nltk.corpus import semcor as semcor
+#from nltk.corpus import semcor as semcor
 
-pos=wn.NOUN
-myword="chicken"
-myneighbours=[("dog",0.5),("hen",0.45),("meat",0.4),("cheese",0.38),("duck",0.37),("cow",0.35)]
-#myneighbours=[("turtle",0.5)]
 
 def wnss(wsi,neighbour):
     #wn sim between word sense and neighbour (maximised over all senses of neighbour)
@@ -51,14 +47,34 @@ def prevalent_sense(word,neighbours):
 
     return (sense,maxp)
 
+def allpairings(word,senseneighbours):
+    candidates = wn.synsets(word,pos=pos)
+    prevmatrix=[]
+    for senseneighbour in senseneighbours:
+        prevmatrix.append(prevalences(word,senseneighbour))
+
+    #permutations
+
+    #for j in range(len(candidates)):
+        #sense to be assigned to neighbourlist1
+
 if __name__=="__main__":
 
-    print len(semcor.sents())
-    print semcor.sents()[0]
-    print semcor.tagged_sents()[0][5]
-    print semcor.tagged_sents(tag="sem")[0][5]
+    pos=wn.NOUN
+    myword="chicken"
+    myneighbours=[("dog",0.5),("hen",0.45),("meat",0.4),("cheese",0.38),("duck",0.37),("cow",0.35)]
+    senseneighbours=[[("dog",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
+    #myneighbours=[("turtle",0.5)]
+
+    #print len(semcor.sents())
+    #print semcor.sents()[0]
+    #print semcor.tagged_sents()[0][5]
+    #print semcor.tagged_sents(tag="sem")[0][5]
     (ps,sc)=prevalent_sense(myword,myneighbours)
     print myword, ps, ps.definition, sc
-
+    for senseneighbour in senseneighbours:
+        (ps,sc)=prevalent_sense(myword,senseneighbour)
+        print myword,ps,ps.definition,sc
+    allpairings(myword,senseneighbours)
 
 
