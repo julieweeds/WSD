@@ -1,5 +1,4 @@
 from nltk.corpus import wordnet as wn
-#from nltk.corpus import semcor as semcor
 
 
 def wnss(wsi,neighbour):
@@ -96,24 +95,17 @@ def allpairings(word,senseneighbours):
             (_,prev)=prevmatrix[dsindex][wnindex]
             mydef=candidates[wnindex].definition
         print senseneighbours[dsindex],candidates[wnindex],mydef,prev
+    return best_score
+
 if __name__=="__main__":
 
     pos=wn.NOUN
     myword="chicken"
-    senseneighbours=[[("cockerel",0.5),("hen",0.45),("meat",0.4),("cheese",0.38),("duck",0.37),("cow",0.35)]]
-  #  senseneighbours=[[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
-    #senseneighbours=[[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
-    #senseneighbours=[[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)],[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
-    #for(word,_) in myneighbours:
-    #    for sense in wn.synsets(word,pos=pos):
-    #        print word,sense,sense.definition
+   # senseneighbours=[[("cockerel",0.5),("hen",0.45),("meat",0.4),("cheese",0.38),("duck",0.37),("cow",0.35)]]
+   # senseneighbours=[[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
+   # senseneighbours=[[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
+    senseneighbours=[[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)],[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
 
-    #print len(semcor.sents())
-    #print semcor.sents()[0]
-    #print semcor.tagged_sents()[0][5]
-    #print semcor.tagged_sents(tag="sem")[0][5]
-    #(ps,sc)=prevalent_sense(myword,myneighbours)
-    #print myword, ps, ps.definition, sc
     for senseneighbour in senseneighbours:
         (ps,sc)=prevalent_sense(myword,senseneighbour)
         print myword,ps,ps.definition,sc
