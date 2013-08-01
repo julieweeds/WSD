@@ -1,12 +1,26 @@
 from nltk.corpus import wordnet as wn
+from nltk.corpus import wordnet_ic as wn_ic
 
+#path_similarity
+#lch_similarity
 
-def wnss(wsi,neighbour):
+#pos=wn.NOUN
+
+posmap={'N':wn.NOUN,'V':wn.VERB,'J':wn.ADJ,'R':wn.ADV}
+ic = wn_ic.ic('ic-semcor.dat')
+
+def untag(wordpos):
+    parts=wordpos.split('/')
+    return(parts[0],posmap.get(parts[1],"unknown"))
+
+def wnss(wsi,neigh,metric):
     #wn sim between word sense and neighbour (maximised over all senses of neighbour)
+    (neighbour,pos)=untag(neigh)
     neighbour_senses=wn.synsets(neighbour,pos=pos)
     maxsim=0
     for neighsense in neighbour_senses:
-        sim = wsi.lch_similarity(neighsense)
+        sim = wnsim(wsi,neighsense,metric)
+
         if sim > maxsim:
             maxsim=sim
             #print "wnss", wsi, wsi.definition, neighsense, neighsense.definition, maxsim
@@ -14,7 +28,21 @@ def wnss(wsi,neighbour):
 
     return maxsim
 
-def prevalences(neighbours,candidates):
+def wnsim(wsi,neigh,metric="wup"):
+    if metric=="lch":
+        return wsi.lch_similarity(neigh)
+    elif metric=="path":
+        return wsi.path_similarity(neigh)
+    elif metric=="wup":
+        return wsi.wup_similarity(neigh)
+    elif metric=="res":
+        return wsi.res_similarity(neigh,ic)
+    elif metric=="jcn":
+        return wsi.jcn_similarity(neigh,ic)
+    else:
+        print "Error: unknown wn similarity metric "+metric
+        exit(1)
+def prevalences(neighbours,candidates,metric):
     #compute prevalence of each sense of word according to neighbour list
     #candidates=wn.synsets(word,pos=pos)
     simtotals={}
@@ -22,7 +50,7 @@ def prevalences(neighbours,candidates):
     for (neigh,ds) in neighbours:
         wn_sim_total=0
         for cand in candidates:
-            wn_sim=wnss(cand,neigh)
+            wn_sim=wnss(cand,neigh,metric)
             wn_sim_total+=wn_sim
         simtotals[neigh]=wn_sim_total
         dstotal+=ds
@@ -31,12 +59,16 @@ def prevalences(neighbours,candidates):
         p=0
         for (neigh,ds) in neighbours:
             #print cand, neigh, ds, wnss(cand,neigh),simtotals[neigh]
-            p += (ds/dstotal) * (wnss(cand,neigh)/simtotals[neigh])
+            if simtotals[neigh]*dstotal == 0:
+                p+=0
+            else:
+                p += (ds/dstotal) * (wnss(cand,neigh,metric)/simtotals[neigh])
         prevs.append((cand,p))
     return prevs
 
-def prevalent_sense(word,neighbours):
-    prevs = prevalences(neighbours,wn.synsets(word,pos=pos))
+def prevalent_sense(w,neighbours,metric):
+    (word,pos)=untag(w)
+    prevs = prevalences(neighbours,wn.synsets(word,pos=pos),metric)
     maxp =0
     sense =""
     for (cand,prev) in prevs:
@@ -46,12 +78,13 @@ def prevalent_sense(word,neighbours):
 
     return (sense,maxp)
 
-def allpairings(word,senseneighbours):
+def allpairings(w,senseneighbours,metric):
+    (word,pos)=untag(w)
     candidates = wn.synsets(word,pos=pos) #may want to filter these so not all synsets are candidates
     wnsenses=len(candidates)
     prevmatrix=[]
     for senseneighbour in senseneighbours:
-        prevmatrix.append(prevalences(senseneighbour,candidates))
+        prevmatrix.append(prevalences(senseneighbour,candidates,metric))
   #  print prevmatrix
     #permutations
 
@@ -99,16 +132,16 @@ def allpairings(word,senseneighbours):
 
 if __name__=="__main__":
 
-    pos=wn.NOUN
-    myword="chicken"
+
+    myword="chicken/N"
    # senseneighbours=[[("cockerel",0.5),("hen",0.45),("meat",0.4),("cheese",0.38),("duck",0.37),("cow",0.35)]]
    # senseneighbours=[[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
    # senseneighbours=[[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
-    senseneighbours=[[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)],[("cockerel",0.5),("hen",0.45),("cow",0.35)],[("meat",0.4),("cheese",0.38),("duck",0.37)]]
-
+    senseneighbours=[[("cockerel/N",0.5),("hen/N",0.45),("cow/N",0.35)],[("cockerel/N",0.5),("hen/N",0.45),("cow/N",0.35)],[("meat/N",0.4),("cheese/N",0.38),("duck/N",0.37)],[("cockerel/N",0.5),("hen/N",0.45),("cow/N",0.35)],[("meat/N",0.4),("cheese/N",0.38),("duck/N",0.37)]]
+    metric = "wup"
     for senseneighbour in senseneighbours:
-        (ps,sc)=prevalent_sense(myword,senseneighbour)
+        (ps,sc)=prevalent_sense(myword,senseneighbour,metric)
         print myword,ps,ps.definition,sc
-    allpairings(myword,senseneighbours)
+    allpairings(myword,senseneighbours,metric)
 
 
