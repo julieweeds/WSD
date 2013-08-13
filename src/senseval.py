@@ -33,6 +33,6 @@ if __name__=="__main__":
 
         for senseneighbour in senseneighbours:
             (ps,sc)=senses.prevalent_sense(word,senseneighbour,metric)
-            print word,ps,ps.definition,sc
-        senses.allpairings(word,senseneighbours,metric)
+            print word,ps,ps.definition,sc, senseneighbour
+        #senses.allpairings(word,senseneighbours,metric)
 

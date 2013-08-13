@@ -69,7 +69,7 @@ def prevalences(neighbours,candidates,metric):
 def prevalent_sense(w,neighbours,metric):
     (word,pos)=untag(w)
     prevs = prevalences(neighbours,wn.synsets(word,pos=pos),metric)
-    maxp =0
+    maxp =-1
     sense =""
     for (cand,prev) in prevs:
         if prev>maxp:
