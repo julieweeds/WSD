@@ -1,5 +1,7 @@
 from nltk.corpus import wordnet as wn
 from nltk.corpus import wordnet_ic as wn_ic
+import math
+from operator import itemgetter
 
 #path_similarity
 #lch_similarity
@@ -77,6 +79,34 @@ def prevalent_sense(w,neighbours,metric):
             maxp=prev
 
     return (sense,maxp)
+
+def display_prevalences(w,neighbours,metric):
+    print neighbours
+    (word,pos)=untag(w)
+    prevs = sorted(prevalences(neighbours,wn.synsets(word,pos=pos),metric),key=itemgetter(1),reverse=True)
+
+    for (synset,prev) in prevs:
+        print synset,synset.definition,prev
+
+
+    return prevs
+
+def compare_prevalences(w,senseA,senseB,metric):
+
+    prevsA=display_prevalences(w,senseA,metric)
+    prevsB=display_prevalences(w,senseB,metric)
+
+    bestchange=0
+    (psA,scA)=prevsA[0]
+    for(ps,sc) in prevsB:
+        if psA == ps:
+            bestchange+=math.fabs(scA-sc)
+    (psB,scB)=prevsB[0]
+    for(ps,sc) in prevsA:
+        if psB == ps:
+            bestchange+=math.fabs(scB-sc)
+    print w,bestchange
+
 
 def allpairings(w,senseneighbours,metric):
     (word,pos)=untag(w)
